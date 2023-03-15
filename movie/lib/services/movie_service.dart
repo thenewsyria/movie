@@ -5,23 +5,26 @@
 // The response is then parsed into a list of Movie objects using the fromJson method.
 
 import 'package:dio/dio.dart';
-import 'package:movie/models/movie.dart';
 
 class MovieService {
   final Dio _dio = Dio();
 
-  Future<List<Movie>> getMovies(int page) async {
-    final response = await _dio.get(
-      'https://api.themoviedb.org/3/movie/popular',
-      queryParameters: {
-        'api_key': 'YOUR_API_KEY_HERE',
-        'language': 'en-US',
-        'page': page,
-      },
-    );
-
-    final results = List<Map<String, dynamic>>.from(response.data['results']);
-    final movies = results.map((movie) => Movie.fromJson(movie)).toList();
-    return movies;
+  Future<Map<String, dynamic>> getPopularMovies(int page) async {
+    try {
+      final response = await _dio.get(
+        'https://api.themoviedb.org/3/movie/popular',
+        queryParameters: {
+          'api_key': 'YOUR_API_KEY',
+          'language': 'en-US',
+          'page': page,
+        },
+      );
+      return response.data;
+    } on DioError catch (e) {
+      print(e.error);
+      return null;
+    }
   }
+
+  // Add other API requests as needed.
 }
