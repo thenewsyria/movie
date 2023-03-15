@@ -1,15 +1,18 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 
-class ConfigService {
-  final RemoteConfig _remoteConfig = RemoteConfig.instance;
+class RemoteConfigService {
+  static final RemoteConfig _remoteConfig = RemoteConfig.instance;
 
-  Future<void> initialize() async {
-    await _remoteConfig.setDefaults(<String, dynamic>{
-      'movie_pagination_limit': 20,
-    });
+  static Future<void> initialize() async {
+    await _remoteConfig.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: const Duration(hours: 1),
+      ),
+    );
     await _remoteConfig.fetchAndActivate();
   }
 
-  int get moviePaginationLimit =>
-      _remoteConfig.getInt('movie_pagination_limit');
+  static int get moviesPerPage =>
+      _remoteConfig.getInt('movies_per_page') ?? 20;
 }
