@@ -120,3 +120,67 @@ class MovieDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = Provider.of<MovieDetailsBloc>(context, listen: false);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Movie Details'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children:
+children: [
+              StreamBuilder<Movie>(
+                stream: bloc.movie,
+                builder: (_, snapshot) {
+                  if (snapshot.hasData) {
+                    final Movie movie = snapshot.data!;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.network(movie.backdropUrl),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                movie.title,
+                                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 16.0),
+                              Text(
+                                movie.releaseDate,
+                                style: TextStyle(fontSize: 16.0),
+                              ),
+                              SizedBox(height: 16.0),
+                              Text(
+                                movie.overview,
+                                style: TextStyle(fontSize: 16.0),
+                              ),
+                              SizedBox(height: 16.0),
+                              ElevatedButton(
+                                child: Text('Play Trailer'),
+                                onPressed: () {
+                                  // Open the movie trailer using the Dio package
+                                  // Code for this is not included as it is beyond the scope of the task
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+            ],
+        ),
+      ),
+    );
+  }
+}
