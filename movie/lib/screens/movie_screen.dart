@@ -3,66 +3,52 @@
 // // The MovieCard widget is defined in the widgets folder.
 
 import 'package:flutter/material.dart';
-import 'package:movie/screens/movie_details_screen.dart';
-import 'package:movie/services/movie_service.dart';
 import 'package:provider/provider.dart';
+import 'package:movie_app/data/models/movie.dart';
+import 'package:movie_app/presentation/widgets/movie_list_item.dart';
+import 'package:movie_app/data/providers/movie_provider.dart';
 
-class MoviesScreen extends StatefulWidget {
-  const MoviesScreen({Key? key}) : super(key: key);
-
+class MovieListScreen extends StatefulWidget {
   @override
-  _MoviesScreenState createState() => _MoviesScreenState();
+  _MovieListScreenState createState() => _MovieListScreenState();
 }
 
-class _MoviesScreenState extends State<MoviesScreen> {
-  final MovieService _movieService = MovieService();
+class _MovieListScreenState extends State<MovieListScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
-    Provider.of<MovieService>(context, listen: false).getMovies(1);
+    Provider.of<MovieProvider>(context, listen: false).getMovies();
+    _scrollController.addListener(_scrollListener);
   }
 
-  void _onScroll() {
+  void _scrollListener() {
     if (_scrollController.offset >=
             _scrollController.position.maxScrollExtent &&
         !_scrollController.position.outOfRange) {
-      Provider.of<MovieService>(context, listen: false).loadMoreMovies();
+      Provider.of<MovieProvider>(context, listen: false).getMovies();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final movieProvider = Provider.of<MovieProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Movie App'),
+        title: Text('Movie List'),
       ),
-      body: Consumer<MovieService>(
-        builder: (_, movieService, __) {
-          return GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.7,
+      body: movieProvider.isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              controller: _scrollController,
+              itemCount: movieProvider.movies.length,
+              itemBuilder: (context, index) {
+                final movie = movieProvider.movies[index];
+                return MovieListItem(movie: movie);
+              },
             ),
-            itemCount: movieService.movies.length,
-            itemBuilder: (_, index) {
-              final movie = movieService.movies[index];
-              return MovieCard(
-                movie: movie,
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => MovieDetailsScreen(movie: movie),
-                  ));
-                },
-              );
-            },
-            controller: _scrollController,
-          );
-        },
-      ),
     );
   }
 }
