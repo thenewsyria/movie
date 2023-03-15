@@ -1,39 +1,27 @@
-import 'package:flutter/material.dart';
-import 'package:movie_app/data/models/movie.dart';
-import 'package:movie_app/data/services/movie_service.dart';
-
-class MovieProvider extends ChangeNotifier {
+class MovieProvider with ChangeNotifier {
   final MovieService _movieService = MovieService();
-  List<Movie> _movies = [];
+  final ConfigService _configService = ConfigService();
   int _currentPage = 1;
   bool _isLoading = false;
+  List<Movie> _movies = [];
 
-  List<Movie> get movies => _movies;
-  int get currentPage => _currentPage;
-  bool get isLoading => _isLoading;
-
-  Future<void> getMovies() async {
-    if (_isLoading) return;
+  bool get isLoading => _
+Future<void> loadMovies() async {
+    if (_isLoading) {
+      return;
+    }
 
     _isLoading = true;
-    notifyListeners();
 
-    final response = await _movieService.getPopularMovies(_currentPage);
-    final movies = response != null
-        ? List<Movie>.from(response['results'].map((data) => Movie(
-              id: data['id'],
-              title: data['title'],
-              overview: data['overview'],
-              posterPath: data['poster_path'],
-              backdropPath: data['backdrop_path'],
-              voteAverage: data['vote_average'].toDouble(),
-              releaseDate: data['release_date'],
-            )))
-        : [];
+    final limit = _configService.moviePaginationLimit;
+
+    final movies = await _movieService.getPopularMovies(
+      page: _currentPage,
+      limit: limit,
+    );
 
     _movies.addAll(movies);
     _currentPage++;
     _isLoading = false;
     notifyListeners();
   }
-}
